@@ -2,9 +2,9 @@ import f from"node:fs"
 let{MAKEFUN_INPUT_DIR:I="/input",MAKEFUN_OUTPUT_DIR:O="/output"}=process.env
 let G="",W=0,D=[],Z=0,Y=-1
 function F(s,B){let P=[],q=[s];P[s]=s*4+1
-for(let h=0;h<q.length;h++){let c=q[h]
+for(let c of q)
 for(let j=4;j--;){let n=c+D[j]
-if(!P[n]&&G[n]!="#"&&!B.includes(n)&&(n/W|0)^Y){P[n]=c*4+j+1;q.push(n)}}}
+if(!P[n]&&G[n]!="#"&&!B.includes(n)&&(n/W|0)^Y){P[n]=c*4+j+1;q.push(n)}}
 for(Z=0;!P[Z];Z++);return P}
 function S(t){let l=t.split(/\r?\n/)
 W=Math.max(0,...l.map(v=>v.length))+2
