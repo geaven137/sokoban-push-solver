@@ -85,7 +85,7 @@ return o2.slice(0,65536)
 }
 for(let n=1;n<6;n++){
 let d=O+"/i00"+n
-f.mkdirSync(d,{recursive:1})
+f.mkdirSync(d,{recursive:true})
 let s=""
 try{s=S(f.readFileSync(I+"/i00"+n+"/level.txt","utf8"))}catch{}
 f.writeFileSync(d+"/solution.txt",s)
