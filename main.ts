@@ -6,20 +6,6 @@ for(let h=0;h<q.length;h++){let c=q[h]
 for(let j=4;j--;){let n=c+D[j]
 if(!P[n]&&G[n]!="#"&&!B.includes(n)&&(n/W|0)^Y){P[n]=c*4+j+1;q.push(n)}}}
 for(Z=0;!P[Z];Z++);return P}
-function B(m,g,b,s,e){let Q=[[b,-1,0,0,F(s,[...b,...e])]],V={[b+":"+Z]:1},h=0
-if(b==g+"")return Q
-while(h<Q.length){let n=Q[h++],p=n[0],P=n[4]
-if(Q.length>4e5)return null
-for(let k=0;k<p.length;k++)for(let j=4;j--;){let y=p[k],t=y+D[j],u=y-D[j]
-if(!P[u]||m&&!m[t]||p.includes(t))continue
-let q=[...p];q[k]=t;q.sort((a,c)=>a-c)
-let R=F(y,[...q,...e]),v=q+":"+Z
-if(V[v])continue
-V[v]=1;Q.push([q,h-1,y,j,R])
-if(q==g+""){let o=[],z=Q.length-1
-while(z>=0)o.unshift(Q[z]),z=Q[z][1]
-return o}}}
-return null}
 function S(t){let l=t.split(/\r?\n/)
 W=Math.max(0,...l.map(v=>v.length))+2
 G="#".repeat(W)+l.map(v=>"#"+v.padEnd(W-2,"#")+"#").join("")+"#".repeat(W)
@@ -38,7 +24,19 @@ Y=-1
 if(!r.length)r.push([0,b,g])
 let p=s,o2="",ab=[...b]
 for(let[m,x,w]of r){let fx=ab.filter(v=>!x.includes(v))
-let C=B(m,w,x,p,fx)
+let Q=[[x,-1,0,0,F(p,[...x,...fx])]],V={[x+":"+Z]:1},h=0,C=null
+if(x==w+"")C=Q
+L:while(h<Q.length&&!C){let n=Q[h++],d=n[0],P=n[4]
+if(Q.length>4e5)break
+for(let k=0;k<d.length;k++)for(let j=4;j--;){let y=d[k],t=y+D[j],u=y-D[j]
+if(!P[u]||m&&!m[t]||d.includes(t))continue
+let q=[...d];q[k]=t;q.sort((a,c)=>a-c)
+let R=F(y,[...q,...fx]),v=q+":"+Z
+if(V[v])continue
+V[v]=1;Q.push([q,h-1,y,j,R])
+if(q==w+""){let o=[],z=Q.length-1
+while(z>=0)o.unshift(Q[z]),z=Q[z][1]
+C=o;break L}}}
 if(!C)return""
 for(let k=1;k<C.length;k++){let n=C[k],f=n[2],j=n[3],P=C[k-1][4],t=f-D[j],z=""
 if(!P[t])return""
