@@ -19,9 +19,11 @@ function popcnt(m) {
   return c;
 }
 
-// Reverse BFS: min pulls from cell to goal (pull valid iff origin cell and
-// player-stand cell are both floor inside the room mask).
-function revDist(goal, mask, wall, W, H) {
+// Reverse BFS: min pulls from cell to goal. From cell x (dist known), a
+// predecessor y = x - d can be pulled to x when the player-stand cell
+// x - 2d is floor (room mask or door); then dist[y] = dist[x] + 1.
+// (Pulls toward the goal: the reverse of a push sequence.)
+function revDist(goal, mask, wall, W, H, door) {
   const d = new Int32Array(W * H).fill(-1);
   d[goal] = 0;
   const q = [goal];
@@ -32,13 +34,14 @@ function revDist(goal, mask, wall, W, H) {
     for (const [dr, dc] of DIRS) {
       const yr = r - dr;
       const yc = c - dc;
-      const zr = r + dr;
-      const zc = c + dc;
+      const zr = r - 2 * dr;
+      const zc = c - 2 * dc;
       if (yr < 0 || yr >= H || yc < 0 || yc >= W) continue;
       if (zr < 0 || zr >= H || zc < 0 || zc >= W) continue;
       const y = yr * W + yc;
       const z = zr * W + zc;
-      if (!mask[y] || wall[y] || !mask[z] || wall[z]) continue;
+      if (!mask[y] || wall[y]) continue;
+      if (wall[z] || (!mask[z] && z !== door)) continue;
       if (d[y] === -1) {
         d[y] = d[x] + 1;
         q.push(y);
@@ -125,7 +128,7 @@ function solveRoom(room, wall, W, H, goalSet) {
   const goals = room.goals;
   const door = room.door;
   const n = room.boxes.length;
-  const dists = goals.map((g) => revDist(g, mask, wall, W, H));
+  const dists = goals.map((g) => revDist(g, mask, wall, W, H, door));
   const dead = new Uint8Array(W * H);
   for (let i = 0; i < W * H; i++) {
     if (!mask[i]) continue;
@@ -138,14 +141,8 @@ function solveRoom(room, wall, W, H, goalSet) {
     }
     if (!ok) dead[i] = 1;
   }
-  // cost[i][j] = min pulls for box i to reach goal j.
-  const cost = [];
-  for (let i = 0; i < n; i++) {
-    const row = [];
-    for (let j = 0; j < n; j++) row.push(dists[j][room.boxes[i]]);
-    cost.push(row);
-  }
-  // Min-matching heuristic via DP over goal subsets.
+  // Min-matching heuristic via DP over goal subsets, using the live
+  // box positions of the state being scored.
   function heur(bs) {
     const INF = 1e9;
     const dp = new Array(1 << n).fill(INF);
@@ -156,7 +153,7 @@ function solveRoom(room, wall, W, H, goalSet) {
       if (i >= n) continue;
       for (let j = 0; j < n; j++) {
         if (m & (1 << j)) continue;
-        const c = cost[i][j];
+        const c = dists[j][bs[i]];
         if (c < 0) continue;
         const nm = m | (1 << j);
         if (dp[nm] > dp[m] + c) dp[nm] = dp[m] + c;
