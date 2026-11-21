@@ -1,19 +1,19 @@
 import f from"node:fs"
 let{MAKEFUN_INPUT_DIR:I="/input",MAKEFUN_OUTPUT_DIR:O="/output"}=process.env
-let G="",W=0,D=[],Z=0,Y=-1,E=[]
+let G="",W=0,D=[],Z=0,Y=-1
 function F(s,B){let P=new Int32Array(G.length),q=[s];P[s]=s*4+1
 for(let h=0;h<q.length;h++){let c=q[h]
 for(let j=4;j--;){let n=c+D[j]
-if(!P[n]&&G[n]!="#"&&!B.includes(n)&&!E.includes(n)&&(n/W|0)^Y){P[n]=c*4+j+1;q.push(n)}}}
+if(!P[n]&&G[n]!="#"&&!B.includes(n)&&(n/W|0)^Y){P[n]=c*4+j+1;q.push(n)}}}
 for(Z=0;!P[Z];Z++);return P}
-function B(m,g,b,s){let Q=[[b,-1,0,0,F(s,b)]],V={[b+":"+Z]:1},h=0
+function B(m,g,b,s,e){let Q=[[b,-1,0,0,F(s,[...b,...e])]],V={[b+":"+Z]:1},h=0
 if(b==g+"")return Q
 while(h<Q.length){let n=Q[h],p=n[0],P=n[4],i=h++
 if(Q.length>4e5)return null
 for(let k=0;k<p.length;k++)for(let j=4;j--;){let y=p[k],t=y+D[j],u=y-D[j]
 if(!P[u]||m&&!m[t]||p.includes(t))continue
 let q=[...p];q[k]=t;q.sort((a,c)=>a-c)
-let R=F(y,q),v=q+":"+Z
+let R=F(y,[...q,...e]),v=q+":"+Z
 if(V[v])continue
 V[v]=1;Q.push([q,i,y,j,R])
 if(q==g+""){let o=[],z=Q.length-1
@@ -37,8 +37,8 @@ if(x.length&&x.length==w.length)r.push([P,x,w])}
 Y=-1
 if(!r.length)r.push([0,b,g])
 let p=s,o2="",ab=[...b]
-for(let[m,x,w]of r){E=ab.filter(v=>!x.includes(v))
-let C=B(m,w,x,p)
+for(let[m,x,w]of r){let fx=ab.filter(v=>!x.includes(v))
+let C=B(m,w,x,p,fx)
 if(!C)return""
 for(let k=1;k<C.length;k++){let n=C[k],f=n[2],j=n[3],P=C[k-1][4],t=f-D[j],z=""
 if(!P[t])return""
