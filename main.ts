@@ -1,107 +1,92 @@
-import{readFileSync as r,writeFileSync as w,mkdirSync as k,existsSync as e}from"node:fs"
-let I=process.env.MAKEFUN_INPUT_DIR||"/input",O=process.env.MAKEFUN_OUTPUT_DIR||"/output"
-let G=[],W=0,D=[]
-function L(d){return d==1?"r":d==-1?"l":d==W?"d":"u"}
+import f from"node:fs"
+let{MAKEFUN_INPUT_DIR:I="/input",MAKEFUN_OUTPUT_DIR:O="/output"}=process.env
+let G="",W=0,D=[],Z=0
 function F(s,B){
-  let P=new Int32Array(G.length).fill(-1),q=[s]
-  P[s]=s
-  for(let h=0;h<q.length;h++){let c=q[h]
-    for(let d of D){let n=c+d
-      if(P[n]==-1&&G[n]!="#"&&!B.includes(n)){P[n]=c;q.push(n)}}}
-  return P
+let P=new Int32Array(G.length).fill(-1),q=[s]
+P[s]=s*4
+for(let h=0;h<q.length;h++){let c=q[h]
+for(let j=0;j<4;j++){let n=c+D[j]
+if(P[n]==-1&&G[n]!="#"&&!B.includes(n)){P[n]=c*4+j;q.push(n)}}}
+for(Z=0;P[Z]==-1;Z++);
+return P
 }
 function A(s,t,B){
-  let P=F(s,B)
-  if(P[t]==-1)return null
-  let o="",c=t
-  while(c!=s){let p=P[c];o=L(c-p)+o;c=p}
-  return o
+let P=F(s,B)
+if(P[t]==-1)return null
+let o="",c=t
+while(c!=s){let v=P[c];o="rldu"[v&3]+o;c=v>>2}
+return o
 }
-function K(b,p){
-  let P=F(p,b),m=0
-  while(P[m]==-1)m++
-  return b+":"+m
+function B(m,g,b,s){
+let Q=[[b,-1,0,0,F(s,b)]],V=new Set([b+":"+Z]),h=0,N=0
+if(b+""==g+"")return[]
+while(h<Q.length){
+let n=Q[h],p=n[0],P=n[4],x=h++
+if(++N>4e5)return 0
+for(let i=0;i<p.length;i++)for(let j=0;j<4;j++){
+let y=p[i],t=y+D[j],u=y-D[j]
+if(P[u]==-1||m&&!m.has(t)||p.includes(t))continue
+let q=[...p];q[i]=t;q.sort((a,c)=>a-c)
+let R=F(y,q),k=q+":"+Z
+if(V.has(k))continue
+V.add(k);Q.push([q,x,y,j,R])
+if(q+""==g+""){
+let o=[],z=Q.length-1
+while(z>0){let d=Q[z];o.push([d[2],d[3]]);z=d[1]}
+return o.reverse()
 }
-function B(mask,gl,bl,st){
-  let Q=[[bl,st,-1,0,0]],V=new Set([K(bl,st)]),h=0,N=0
-  if(bl+""==gl+"")return[]
-  while(h<Q.length){
-    let n=Q[h],b=n[0],p=n[1],x=h++
-    if(++N>4e5)return 0
-    let P=F(p,b)
-    for(let i=0;i<b.length;i++)for(let d of D){
-      let f=b[i],t=f+d,s=f-d
-      if(P[s]==-1||!mask.has(t)||b.includes(t))continue
-      let nb=[...b];nb[i]=t;nb.sort((a,c)=>a-c)
-      let kk=K(nb,f)
-      if(V.has(kk))continue
-      V.add(kk)
-      Q.push([nb,f,x,f,d])
-      if(nb+""==gl+""){
-        let o=[],y=Q.length-1
-        while(y>0){let nd=Q[y];o.push([nd[3],nd[4]]);y=nd[2]}
-        return o.reverse()
-      }
-    }
-  }
-  return 0
 }
-function S(txt){
-  let ls=txt.replace(/\r/g,"").split("\n")
-  while(ls.length&&ls[ls.length-1]=="")ls.pop()
-  let W0=0
-  for(let l of ls)W0=Math.max(W0,l.length)
-  W=W0+2
-  let H=ls.length+2
-  G=new Array(W*H).fill("#")
-  D=[1,-1,W,-W]
-  let st=0,bx=[],gl=[]
-  ls.forEach((l,y)=>{for(let x=0;x<l.length;x++){let c=l[x],i=(y+1)*W+x+1;G[i]=c
-    if(c=="@"||c=="+")st=i
-    if(c=="$"||c=="*")bx.push(i)
-    if(c=="."||c=="*"||c=="+")gl.push(i)}})
-  if(!st)return""
-  let y0=(st/W)|0,seen=new Set(),rooms=[]
-  for(let i=0;i<G.length;i++){
-    if(G[i]=="#"||seen.has(i)||((i/W)|0)==y0)continue
-    let q=[i],comp=[],door=0
-    seen.add(i)
-    for(let h=0;h<q.length;h++){let c=q[h];comp.push(c)
-      for(let d of D){let n=c+d
-        if(G[n]=="#")continue
-        if(((n/W)|0)==y0){door=n;continue}
-        if(!seen.has(n)){seen.add(n);q.push(n)}}}
-    let cs=new Set(comp)
-    let rb=bx.filter(x=>cs.has(x)),rg=gl.filter(x=>cs.has(x))
-    if(door&&rb.length&&rb.length==rg.length)rooms.push({m:cs,d:door,b:rb,g:rg})
-  }
-  if(!rooms.length){
-    let all=new Set()
-    for(let i=0;i<G.length;i++)if(G[i]!="#")all.add(i)
-    rooms.push({m:all,d:st,b:bx,g:gl})
-  }
-  let pl=st,out="",ab=[...bx]
-  for(let r of rooms){
-    let w=A(pl,r.d,ab)
-    if(w==null)return""
-    out+=w;pl=r.d
-    let b=r.b.slice().sort((a,c)=>a-c),g=r.g.slice().sort((a,c)=>a-c)
-    let ps=B(r.m,g,b,pl)
-    if(!ps)return""
-    for(let[f,d]of ps){
-      let w2=A(pl,f-d,ab)
-      if(w2==null)return""
-      out+=w2+L(d)
-      ab[ab.indexOf(f)]=f+d
-      pl=f
-    }
-  }
-  return out.slice(0,65536)
 }
-for(let id of["i001","i002","i003","i004","i005"]){
-  let p=I+"/"+id+"/level.txt",o=O+"/"+id
-  k(o,{recursive:true})
-  let s=""
-  if(e(p))s=S(r(p,"utf8"))
-  w(o+"/solution.txt",s)
+return 0
+}
+function S(t){
+let l=t.replace(/\r/g,"").split("\n")
+while(l.length&&!l[l.length-1])l.pop()
+let W0=Math.max(0,...l.map(v=>v.length))
+W=W0+2
+G="#".repeat(W)+l.map(v=>"#"+v.padEnd(W0,"#")+"#").join("")+"#".repeat(W)
+D=[1,-1,W,-W]
+let s=0,b=[],g=[]
+for(let i=0;i<G.length;i++){let c=G[i]
+if(c=="@"||c=="+")s=i
+if(c=="$"||c=="*")b.push(i)
+if(c=="."||c=="*"||c=="+")g.push(i)}
+if(!s)return""
+let y=s/W|0,e=new Set(),r=[]
+for(let i=0;i<G.length;i++){
+if(G[i]=="#"||e.has(i)||(i/W|0)==y)continue
+let q=[i],o=[],d=0
+e.add(i)
+for(let h=0;h<q.length;h++){let c=q[h];o.push(c)
+for(let j=0;j<4;j++){let n=c+D[j]
+if(G[n]=="#")continue
+if((n/W|0)==y){d=n;continue}
+if(!e.has(n)){e.add(n);q.push(n)}}}
+let v=new Set(o),x=b.filter(z=>v.has(z)),w=g.filter(z=>v.has(z))
+if(d&&x.length&&x.length==w.length)r.push([v,d,x,w])
+}
+if(!r.length)r.push([0,s,b,g])
+let p=s,o2="",ab=[...b]
+for(let[m,d,x,w]of r){
+let z=A(p,d,ab)
+if(z==null)return""
+o2+=z;p=d
+let P2=B(m,w,x,p)
+if(!P2)return""
+for(let[y,j]of P2){
+let z2=A(p,y-D[j],ab)
+if(z2==null)return""
+o2+=z2+"rldu"[j]
+ab[ab.indexOf(y)]=y+D[j]
+p=y
+}
+}
+return o2.slice(0,65536)
+}
+for(let n=1;n<6;n++){
+let d=O+"/i00"+n
+f.mkdirSync(d,{recursive:1})
+let s=""
+try{s=S(f.readFileSync(I+"/i00"+n+"/level.txt","utf8"))}catch{}
+f.writeFileSync(d+"/solution.txt",s)
 }
